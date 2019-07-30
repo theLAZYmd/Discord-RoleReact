@@ -24,9 +24,9 @@ function generateMessages() {
 
 // Function to generate the embed fields, based on your settings and if you set "const embed = true;"
 function generateEmbedFields() {
-    return CONFIG.roles.map((r, e) => {
+    return CONFIG.roles.map((r, i) => {
         return {
-            emoji: CONFIG.reactions[e],
+            emoji: CONFIG.reactions[i],
             role: r
         };
     });
@@ -79,27 +79,25 @@ client.on("message", message => {
 					throw `The role '${role}' does not exist!`;
 
 				message.channel.send(msg).then(async m => {
-					const customCheck = message.guild.emojis.find(e => e.name === emoji);
+					let customCheck = message.guild.emojis.find(e => e.name === emoji);
 					if (!customCheck) await m.react(emoji);
 					else await m.react(customCheck.id);
 				}).catch(console.error);
 			}
 		} else {
+			// All well and good that the user wants an embed but have they filled in the properties?
 			if (!CONFIG.embedMessage)
 				throw new Error("The 'embedMessage' property is not set in the config.js file. Please do this!");
 			if (!CONFIG.embedFooter)
 				throw new Error("The 'embedFooter' property is not set in the config.js file. Please do this!");
+			if (!CONFIG.embedColor)
+				throw new Error("The 'embedColor' property is not set in the config.js file. Please do this!");
 
 			const roleEmbed = new RichEmbed()
 				.setDescription(CONFIG.embedMessage)
-				.setFooter(CONFIG.embedFooter);
-
-			if (CONFIG.embedColor) roleEmbed.setColor(CONFIG.embedColor);
-
-			if (CONFIG.embedThumbnail && (CONFIG.embedThumbnailLink !== '')) 
-				roleEmbed.setThumbnail(CONFIG.embedThumbnailLink);
-			else if (CONFIG.embedThumbnail && message.guild.icon)
-				roleEmbed.setThumbnail(message.guild.iconURL);
+				.setFooter(CONFIG.embedFooter)
+				.setColor(CONFIG.embedColor)
+				.setThumbnail(CONFIG.embedThumbnailLink || message.guild.iconURL || undefined);
 
 			const fields = generateEmbedFields();
 			if (fields.length > 25) throw new Error("That maximum roles that can be set for an embed is 25!");
