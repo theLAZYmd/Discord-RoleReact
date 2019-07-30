@@ -45,6 +45,14 @@ module.exports = {
 	 */
 	embedColor: "#dd9323",
 
+	
+	/**
+	 * Set the embed error color if the "embed" variable is set to "true"
+	 * Format:
+	 * #dd9323
+	 */
+	embedErrorColor: "#FF0000",
+
 	/**
 	 * Set to "true" if you want to set a thumbnail in the embed
 	 */

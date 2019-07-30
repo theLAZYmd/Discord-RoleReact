@@ -1,3 +1,4 @@
+/* eslint-disable*/
 // Import constructors, configuration and login the client
 const { Client, RichEmbed, Emoji, MessageReaction } = require('discord.js');
 const CONFIG = require('./config');
@@ -37,87 +38,102 @@ client.on('error', console.error);
 
 // Handles the creation of the role reactions. Will either send the role messages separately or in an embed
 client.on("message", message => {
-    // Make sure bots can't run this command
-    if (message.author.bot) return;
+	try {
 
-    // Make sure the command can only be ran in a server
-    if (!message.guild) return;
+		// Make sure bots can't run this command
+		if (message.author.bot) throw '';
 
-    // We don't want the bot to do anything further if it can't send messages in the channel
-    if (message.guild && !message.channel.permissionsFor(message.guild.me).missing('SEND_MESSAGES')) return;
+		// Make sure the command can only be ran in a server
+		if (!message.guild) throw '';
 
-    if ((message.author.id !== CONFIG.yourID) && (message.content.toLowerCase() !== CONFIG.setupCMD)) return;
+		// if wrong command is used
+		if (message.content.toLowerCase() !== CONFIG.setupCMD) throw '';
 
-    if (CONFIG.deleteSetupCMD) {
-        const missing = message.channel.permissionsFor(message.guild.me).missing('MANAGE_MESSAGES');
-        // Here we check if the bot can actually delete messages in the channel the command is being ran in
-        if (missing.includes('MANAGE_MESSAGES'))
-            throw new Error("I need permission to delete your command message! Please assign the 'Manage Messages' permission to me in this channel!");
-        message.delete().catch(O_o=>{});
-    }
+		// We don't want the bot to do anything further if it can't send messages in the channel
+		if (!message.channel.permissionsFor(message.guild.me).missing('SEND_MESSAGES')) throw '';
 
-    const missing = message.channel.permissionsFor(message.guild.me).missing('MANAGE_MESSAGES');
-    // Here we check if the bot can actually add recations in the channel the command is being ran in
-    if (missing.includes('ADD_REACTIONS'))
-        throw new Error("I need permission to add reactions to these messages! Please assign the 'Add Reactions' permission to me in this channel!");
+		// If some person who is not you is trying to set up the bot
+		if ((message.author.id !== CONFIG.yourID)) throw '';
 
-    if (!CONFIG.embed) {
-        if (!CONFIG.initialMessage || (CONFIG.initialMessage === '')) 
-            throw "The 'initialMessage' property is not set in the config.js file. Please do this!";
+		// Here we check if the bot can actually delete messages in the channel the command is being ran in
+		if (CONFIG.deleteSetupCMD) {
+			const missing = message.channel.permissionsFor(message.guild.me).missing('MANAGE_MESSAGES');
+			if (missing.includes('MANAGE_MESSAGES'))
+				throw new Error("I need permission to delete your command message! Please assign the 'Manage Messages' permission to me in this channel!");
+			message.delete().catch(()=>{});
+		}
 
-        message.channel.send(CONFIG.initialMessage);
+		const missing = message.channel.permissionsFor(message.guild.me).missing('MANAGE_MESSAGES');
+		// Here we check if the bot can actually add recations in the channel the command is being ran in
+		if (missing.includes('ADD_REACTIONS'))
+			throw new Error("I need permission to add reactions to these messages! Please assign the 'Add Reactions' permission to me in this channel!");
 
-        const messages = generateMessages();
-        for (const { role, message: msg, emoji } of messages) {
-            if (!message.guild.roles.find(r => r.name === role))
-                throw `The role '${role}' does not exist!`;
+		// Does the user want the response to be in the form of a large embed?
+		if (!CONFIG.embed) {
+			if (!CONFIG.initialMessage || (CONFIG.initialMessage === '')) 
+				throw new Error("The 'initialMessage' property is not set in the config.js file. Please do this!");
 
-            message.channel.send(msg).then(async m => {
-                const customCheck = message.guild.emojis.find(e => e.name === emoji);
-                if (!customCheck) await m.react(emoji);
-                else await m.react(customCheck.id);
-            }).catch(console.error);
-        }
-    } else {
-        if (!CONFIG.embedMessage || (CONFIG.embedMessage === ''))
-            throw "The 'embedMessage' property is not set in the config.js file. Please do this!";
-        if (!CONFIG.embedFooter || (CONFIG.embedMessage === ''))
-            throw "The 'embedFooter' property is not set in the config.js file. Please do this!";
+			message.channel.send(CONFIG.initialMessage);
 
-        const roleEmbed = new RichEmbed()
-            .setDescription(CONFIG.embedMessage)
-            .setFooter(CONFIG.embedFooter);
+			const messages = generateMessages();
+			for (const { role, message: msg, emoji } of messages) {
+				if (!message.guild.roles.find(r => r.name === role))
+					throw `The role '${role}' does not exist!`;
 
-        if (CONFIG.embedColor) roleEmbed.setColor(CONFIG.embedColor);
+				message.channel.send(msg).then(async m => {
+					const customCheck = message.guild.emojis.find(e => e.name === emoji);
+					if (!customCheck) await m.react(emoji);
+					else await m.react(customCheck.id);
+				}).catch(console.error);
+			}
+		} else {
+			if (!CONFIG.embedMessage || (CONFIG.embedMessage === ''))
+				throw new Error("The 'embedMessage' property is not set in the config.js file. Please do this!");
+			if (!CONFIG.embedFooter || (CONFIG.embedMessage === ''))
+				throw new Error("The 'embedFooter' property is not set in the config.js file. Please do this!");
 
-        if (CONFIG.embedThumbnail && (CONFIG.embedThumbnailLink !== '')) 
-            roleEmbed.setThumbnail(CONFIG.embedThumbnailLink);
-        else if (CONFIG.embedThumbnail && message.guild.icon)
-            roleEmbed.setThumbnail(message.guild.iconURL);
+			const roleEmbed = new RichEmbed()
+				.setDescription(CONFIG.embedMessage)
+				.setFooter(CONFIG.embedFooter);
 
-        const fields = generateEmbedFields();
-        if (fields.length > 25) throw "That maximum roles that can be set for an embed is 25!";
+			if (CONFIG.embedColor) roleEmbed.setColor(CONFIG.embedColor);
 
-        for (const { emoji, role } of fields) {
-            if (!message.guild.roles.find(r => r.name === role))
-                throw `The role '${role}' does not exist!`;
+			if (CONFIG.embedThumbnail && (CONFIG.embedThumbnailLink !== '')) 
+				roleEmbed.setThumbnail(CONFIG.embedThumbnailLink);
+			else if (CONFIG.embedThumbnail && message.guild.icon)
+				roleEmbed.setThumbnail(message.guild.iconURL);
 
-            const customEmote = client.emojis.find(e => e.name === emoji);
-            
-            if (!customEmote) roleEmbed.addField(emoji, role, true);
-            else roleEmbed.addField(customEmote, role, true);
-        }
+			const fields = generateEmbedFields();
+			if (fields.length > 25) throw new Error("That maximum roles that can be set for an embed is 25!");
 
-        message.channel.send(roleEmbed).then(async m => {
-            for (const r of CONFIG.reactions) {
-                const emoji = r;
-                const customCheck = client.emojis.find(e => e.name === emoji);
-                
-                if (!customCheck) await m.react(emoji);
-                else await m.react(customCheck.id);
-            }
-        });
-    }
+			for (const { emoji, role } of fields) {
+				if (!message.guild.roles.find(r => r.name === role))
+					throw new Error(`The role '${role}' does not exist!`);
+
+				const customEmote = client.emojis.find(e => e.name === emoji);
+				
+				if (!customEmote) roleEmbed.addField(emoji, role, true);
+				else roleEmbed.addField(customEmote, role, true);
+			}
+
+			message.channel.send(roleEmbed).then(async m => {
+				for (const r of CONFIG.reactions) {
+					const emoji = r;
+					const customCheck = client.emojis.find(e => e.name === emoji);
+					
+					if (!customCheck) await m.react(emoji);
+					else await m.react(customCheck.id);
+				}
+			});
+		}
+	} catch (e) {
+		if (!e || !e.message) return;
+		if (CONFIG.embed) message.channel.send({
+			color: CONFIG.embedErrorColor,
+			description: e.message
+		})
+		else message.channel.send(e.message);
+	}
 });
 
 // This makes the events used a bit more readable
@@ -149,7 +165,7 @@ client.on('raw', async event => {
     let embedFooterText;
     if (message.embeds[0]) embedFooterText = message.embeds[0].footer.text;
 
-    if (
+    if (message.author.id
         (message.author.id === client.user.id) && (message.content !== CONFIG.initialMessage || 
         (message.embeds[0] && (embedFooterText !== CONFIG.embedFooter)))
     ) {
