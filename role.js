@@ -131,54 +131,31 @@ const events = {
 // This event handles adding/removing users from the role(s) they chose based on message reactions
 client.on('raw', async event => {
     if (!events.hasOwnProperty(event.t)) return;
-
-    const { d: data } = event;
+	const { d: data } = event;
+	
+	// Generate properties usable for the rest of the function
     const user = client.users.get(data.user_id);
-    const channel = client.channels.get(data.channel_id);
-
     const message = await channel.fetchMessage(data.message_id);
-    const member = message.guild.members.get(user.id);
-
+    const channel = client.channels.get(data.channel_id);
+	const member = message.guild.members.get(user.id);
+	// Checks for when not to react
+	if (user.bot) return;
+	if (message.author.id !== client.user.id) return;
+	if (channel.memberPremissions(client.guild.me).has('ADD_MESSAGES')) return;
+	// Generate a 'reaction' object
     const emojiKey = (data.emoji.id) ? `${data.emoji.name}:${data.emoji.id}` : data.emoji.name;
     let reaction = message.reactions.get(emojiKey);
-
     if (!reaction) {
-        // Create an object that can be passed through the event like normal
         const emoji = new Emoji(client.guilds.get(data.guild_id), data.emoji);
         reaction = new MessageReaction(message, emoji, 1, data.user_id === client.user.id);
-    }
-
-    let embedFooterText;
-    if (message.embeds[0]) embedFooterText = message.embeds[0].footer.text;
-
-    if (message.author.id
-        (message.author.id === client.user.id) && (message.content !== CONFIG.initialMessage || 
-        (message.embeds[0] && (embedFooterText !== CONFIG.embedFooter)))
-    ) {
-
-        if (!CONFIG.embed && (message.embeds.length < 1)) {
-            const re = `\\*\\*"(.+)?(?="\\*\\*)`;
-            const role = message.content.match(re)[1];
-
-            if (member.id !== client.user.id) {
-                const guildRole = message.guild.roles.find(r => r.name === role);
-                if (event.t === "MESSAGE_REACTION_ADD") member.addRole(guildRole.id);
-                else if (event.t === "MESSAGE_REACTION_REMOVE") member.removeRole(guildRole.id);
-            }
-        } else if (CONFIG.embed && (message.embeds.length >= 1)) {
-            const fields = message.embeds[0].fields;
-
-            for (const { name, value } of fields) {
-                if (member.id !== client.user.id) {
-                    const guildRole = message.guild.roles.find(r => r.name === value);
-                    if ((name === reaction.emoji.name) || (name === reaction.emoji.toString())) {
-                        if (event.t === "MESSAGE_REACTION_ADD") member.addRole(guildRole.id);
-                        else if (event.t === "MESSAGE_REACTION_REMOVE") member.removeRole(guildRole.id);
-                    }
-                }
-            }
-        }
-    }
+	}
+	
+	let roleName = CONFIG.ROLES[reaction.emoji.name];
+	if (!roleName) return;
+	let guildRole = message.guild.roles.find(r => r.name === value);
+	if (!guildRole) return;
+	if (event.t === "MESSAGE_REACTION_ADD") member.addRole(guildRole.id);
+	else if (event.t === "MESSAGE_REACTION_REMOVE") member.removeRole(guildRole.id);
 });
 
 process.on('unhandledRejection', err => {
