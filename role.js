@@ -6,8 +6,6 @@ const client = new Client({ disableEveryone: true });
 if (CONFIG.botToken === '')
     throw new Error("The 'botToken' property is not set in the config.js file. Please do this!");
 
-client.login(CONFIG.botToken);
-
 // If there isn't a reaction for every role, alert the user
 if (CONFIG.roles.length !== CONFIG.reactions.length)
     throw "Roles list and reactions list are not the same length! Please double check this in the config.js file";
@@ -185,3 +183,6 @@ process.on('unhandledRejection', err => {
     const msg = err.stack.replace(new RegExp(`${__dirname}/`, 'g'), './');
 	console.error("Unhandled Rejection", msg);
 });
+
+
+client.login(CONFIG.botToken);
