@@ -49,23 +49,21 @@ client.on("message", message => {
 		// if wrong command is used
 		if (message.content.toLowerCase() !== CONFIG.setupCMD) throw '';
 
-		// We don't want the bot to do anything further if it can't send messages in the channel
-		if (!message.channel.permissionsFor(message.guild.me).missing('SEND_MESSAGES')) throw '';
-
 		// If some person who is not you is trying to set up the bot
 		if ((message.author.id !== CONFIG.yourID)) throw '';
 
-		// Here we check if the bot can actually delete messages in the channel the command is being ran in
+		// Check: can the bot send messages in this particular channel? If not, do nothing
+		if (!message.channel.memberPermissions(message.guild.me).has('SEND_MESSAGES')) throw '';
+
+		// Check: can the bot delete messages? If not that's an error
 		if (CONFIG.deleteSetupCMD) {
-			const missing = message.channel.permissionsFor(message.guild.me).missing('MANAGE_MESSAGES');
-			if (missing.includes('MANAGE_MESSAGES'))
+			if (!message.channel.memberPermissions(message.guild.me).has('MANAGE_MESSAGES'))
 				throw new Error("I need permission to delete your command message! Please assign the 'Manage Messages' permission to me in this channel!");
 			message.delete().catch(()=>{});
 		}
 
-		const missing = message.channel.permissionsFor(message.guild.me).missing('MANAGE_MESSAGES');
-		// Here we check if the bot can actually add recations in the channel the command is being ran in
-		if (missing.includes('ADD_REACTIONS'))
+		// Check: can the bot add reactions? If not that's an error
+		if (!message.channel.memberPermissions(message.guild.me).has('ADD_MESSAGES'))
 			throw new Error("I need permission to add reactions to these messages! Please assign the 'Add Reactions' permission to me in this channel!");
 
 		// Does the user want the response to be in the form of a large embed?
