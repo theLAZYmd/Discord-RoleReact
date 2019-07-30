@@ -85,7 +85,7 @@ client.on('message', message => {
 			let fields = CONFIG['embed' + argument.toString()];
 
 			const roleEmbed = new RichEmbed()
-				.setDescription(CONFIG.embedMessage)
+				.setDescription(CONFIG.embedMessage.split('\n').trim().join('\n'))
 				.setFooter(CONFIG.embedFooter)
 				.setColor(CONFIG.embedColor)
 				.setThumbnail(CONFIG.embedThumbnailLink || message.guild.iconURL || undefined);
