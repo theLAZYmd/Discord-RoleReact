@@ -1,3 +1,4 @@
+/*eslint-disable*/
 module.exports = {
 
 	/**
@@ -24,13 +25,24 @@ module.exports = {
 	 * Must set this if "embed" is set to true
 	 */
 	embedFooter: "Role Reactions",
-	
-	roles: ["Hacker", "Artist", "Public Relations", "Intern"],
 
-	/**
-	 * For custom emojis, provide the name of the emoji
-	 */
-	reactions: ["💻", "🖌", "😃", "🆕"],
+	roles: {
+
+		// List your first role with the emoji you want like "emoji": "roleName"
+		"💻": "Hacker",
+
+		// Don't forget to put a comma afterwards!
+		"🖌": "Artist",
+
+		// And so on
+		"😃": "Public Relations",
+
+		// You can put up to 25 here
+		"🆕": "Intern",
+
+		//You can also use the name of the emoji, ex: :customEmoji1: to get a role
+		"customEmoji1": "myRole1"
+	},
 
 	/**
 	 * Set to "true" if you want all roles to be in a single embed

@@ -2,6 +2,7 @@
 // Import constructors, configuration and login the client
 const { Client, RichEmbed, Emoji, MessageReaction } = require('discord.js');
 const CONFIG = require('./config');
+const PACKAGE = require('./package.json');
 
 const client = new Client({ disableEveryone: true });
 if (CONFIG.botToken === '')
@@ -22,18 +23,11 @@ function generateMessages() {
     });
 }
 
-// Function to generate the embed fields, based on your settings and if you set "const embed = true;"
-function generateEmbedFields() {
-    return CONFIG.roles.map((r, i) => {
-        return {
-            emoji: CONFIG.reactions[i],
-            role: r
-        };
-    });
-}
-
 // Client events to let you know if the bot is online and to handle any Discord.js errors
-client.on("ready", () => console.log("Role Reactions is online!"));
+client.on("ready", () => {
+	console.log("Role Reactions is online!");
+	if (Array.isArray(CONFIG.roles) || Array.isArray(CONFIG.reactions)) throw `Config with .roles and .reactions is deprecated in ${PACKAGE.version} of the bot. Please review new CONFIG format.`
+});
 client.on('error', console.error);
 
 // Handles the creation of the role reactions. Will either send the role messages separately or in an embed
@@ -99,24 +93,20 @@ client.on("message", message => {
 				.setColor(CONFIG.embedColor)
 				.setThumbnail(CONFIG.embedThumbnailLink || message.guild.iconURL || undefined);
 
-			const fields = generateEmbedFields();
+			const fields = Object.entries(CONFIG.roles);
 			if (fields.length > 25) throw new Error("That maximum roles that can be set for an embed is 25!");
-
-			for (const { emoji, role } of fields) {
+			for (let [emoji, role] of fields) {
 				if (!message.guild.roles.find(r => r.name === role))
 					throw new Error(`The role '${role}' does not exist!`);
 
 				const customEmote = client.emojis.find(e => e.name === emoji);
-				
 				if (!customEmote) roleEmbed.addField(emoji, role, true);
 				else roleEmbed.addField(customEmote, role, true);
 			}
 
 			message.channel.send(roleEmbed).then(async m => {
-				for (const r of CONFIG.reactions) {
-					const emoji = r;
+				for (let [emoji] of fields) {
 					const customCheck = client.emojis.find(e => e.name === emoji);
-					
 					if (!customCheck) await m.react(emoji);
 					else await m.react(customCheck.id);
 				}
