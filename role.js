@@ -8,21 +8,6 @@ const client = new Client({ disableEveryone: true });
 if (CONFIG.botToken === '')
     throw new Error("The 'botToken' property is not set in the config.js file. Please do this!");
 
-// If there isn't a reaction for every role, alert the user
-if (CONFIG.roles.length !== CONFIG.reactions.length)
-    throw "Roles list and reactions list are not the same length! Please double check this in the config.js file";
-
-// Function to generate the role messages, based on your settings
-function generateMessages() {
-    return CONFIG.roles.map((r, e) => {
-        return {
-            role: r,
-            message: `React below to get the **"${r}"** role!`, //DONT CHANGE THIS,
-            emoji: CONFIG.reactions[e]
-        };
-    });
-}
-
 // Client events to let you know if the bot is online and to handle any Discord.js errors
 client.on("ready", () => {
 	console.log("Role Reactions is online!");
@@ -82,7 +67,7 @@ client.on("message", message => {
 				}).catch(console.error);
 			}
 		} else {
-			
+
 			// All well and good that the user wants an embed but have they filled in the properties?
 			if (!CONFIG.embedMessage)
 				throw new Error("The 'embedMessage' property is not set in the config.js file. Please do this!");
