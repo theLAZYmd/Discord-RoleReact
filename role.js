@@ -146,12 +146,15 @@ client.on('raw', async event => {
 		reaction = new MessageReaction(message, emoji, 1, data.user_id === client.user.id);
 	}
 	
-	let roleName = CONFIG.ROLES[reaction.emoji.name];
-	if (!roleName) return;
-	let guildRole = message.guild.roles.find(r => r.name === roleName);
-	if (!guildRole) return;
-	if (event.t === 'MESSAGE_REACTION_ADD') member.addRole(guildRole.id);
-	else if (event.t === 'MESSAGE_REACTION_REMOVE') member.removeRole(guildRole.id);
+	for (let prop of Object.getOwnPropertyNmaes(CONFIG)) {
+		if (typeof prop !== 'object') continue;
+		let roleName = CONFIG[prop][reaction.emoji.name];
+		if (!roleName) return;
+		let guildRole = message.guild.roles.find(r => r.name === roleName);
+		if (!guildRole) return;
+		if (event.t === 'MESSAGE_REACTION_ADD') member.addRole(guildRole.id);
+		else if (event.t === 'MESSAGE_REACTION_REMOVE') member.removeRole(guildRole.id);
+	}
 });
 
 process.on('unhandledRejection', err => {
