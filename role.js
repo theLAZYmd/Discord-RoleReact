@@ -26,7 +26,7 @@ client.on("message", message => {
 		if (!message.guild) throw '';
 
 		// if wrong command is used
-		if (message.content.toLowerCase() !== CONFIG.setupCMD) throw '';
+		if (!message.content.toLowerCase().startsWith(CONFIG.setupCMD)) throw '';
 
 		// If some person who is not you is trying to set up the bot
 		if ((message.author.id !== CONFIG.yourID)) throw '';
@@ -45,10 +45,17 @@ client.on("message", message => {
 		if (!message.channel.memberPermissions(message.guild.me).has('ADD_MESSAGES'))
 			throw new Error("I need permission to add reactions to these messages! Please assign the 'Add Reactions' permission to me in this channel!");
 
-		const fields = Object.entries(CONFIG.roles);
+		const argument = message.content.slice(CONFIG.setupCMD.length).trim();
+		if (argument && typeof argument !== 'number')
+			throw new Error('Argument parameter must be a number!');
+		argument++;
+		if (typeof config['embed' + argument.toString()] !== 'object')
+			throw new Error('Couldn\'t find list of emojis/roles with that embed index');
 
 		// Does the user want the response to be in the form of a large embed?
 		if (!CONFIG.embed) {
+
+			let fields = Object.entries(CONFIG.roles);
 
 			// All well and good that the user wants a message but have they set their initial message?
 			if (!CONFIG.initialMessage || (CONFIG.initialMessage === '')) 
@@ -75,6 +82,8 @@ client.on("message", message => {
 				throw new Error("The 'embedFooter' property is not set in the config.js file. Please do this!");
 			if (!CONFIG.embedColor)
 				throw new Error("The 'embedColor' property is not set in the config.js file. Please do this!");
+
+			let fields = CONFIG['embed' + argument.toString()];
 
 			const roleEmbed = new RichEmbed()
 				.setDescription(CONFIG.embedMessage)

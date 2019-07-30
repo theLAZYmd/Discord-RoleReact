@@ -43,6 +43,17 @@ module.exports = {
 		//You can also use the name of the emoji, ex: :customEmoji1: to get a role
 		"customEmoji1": "myRole1"
 	},
+	
+	/**
+	 * Note: you can also create several of these if you want to get around the 25-length embed limit by:
+	 * setting the 'roles' object above to {}
+	 * creating a new object called 'embed1' below this
+	 * with the exact same format as the roles object.
+	 * Each 'embedn' object, where n is a number can be outputted with the command '${setupCMD} ${n}', ex: '!createrolemessage 1'
+	 */
+
+	embed1: {},
+	embed2: {},
 
 	/**
 	 * Set to "true" if you want all roles to be in a single embed
