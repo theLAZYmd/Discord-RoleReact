@@ -85,9 +85,9 @@ client.on("message", message => {
 				}).catch(console.error);
 			}
 		} else {
-			if (!CONFIG.embedMessage || (CONFIG.embedMessage === ''))
+			if (!CONFIG.embedMessage)
 				throw new Error("The 'embedMessage' property is not set in the config.js file. Please do this!");
-			if (!CONFIG.embedFooter || (CONFIG.embedMessage === ''))
+			if (!CONFIG.embedFooter)
 				throw new Error("The 'embedFooter' property is not set in the config.js file. Please do this!");
 
 			const roleEmbed = new RichEmbed()
